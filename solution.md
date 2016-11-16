@@ -54,16 +54,15 @@ Instead edit the template file and then run 'md-process'.
 
 ```javascript
 let controller = {
-  game: game,
   $board: null,
   $statusMessage: null,
 
   showCurrentPlayer: function() {
-    this.$statusMessage.text('Current Player: ' + this.game.currentPlayer);
+    this.$statusMessage.text('Current Player: ' + game.currentPlayer);
   },
 
   showWinner: function() {
-    this.$statusMessage.text('Player ' + this.game.currentPlayer + ' has won!');
+    this.$statusMessage.text('Player ' + game.currentPlayer + ' has won!');
   },
 
   showCat: function() {
@@ -76,35 +75,32 @@ let controller = {
   },
 
   move: function(r, c) {
-    // alert('you move me: ' + r + ',' + c);
-    this.game.move(r, c);
+    game.move(r, c);
     let $cell = this.getCell(r, c);
-    $cell.text(this.game.currentPlayer)
-         .addClass(this.game.currentPlayer)
-         .prop("disabled", true);
-    if (this.game.checkForEndOfGame() === false) {
-      this.game.togglePlayer();
+    $cell.text(game.currentPlayer)
+         .addClass(game.currentPlayer)
+         .prop('disabled', true);
+    if (game.checkForEndOfGame() === false) {
+      game.togglePlayer();
       this.showCurrentPlayer();
     }
-    else if (this.game.winner) {
+    else if (game.winner) {
       this.showWinner();
-      $('.cell').prop("disabled", true);
+      $('.cell').prop('disabled', true);   // winner means no more moves
     }
     else {
       this.showCat();
-      $('.cell').prop("disabled", true);
     }
   },
 
   buildGameBoard: function() {
-    for (let r = 0; r < this.game.board.length; r++) {
-      let $row = $("<div></div>");
-      let row = [];
-      for (let c = 0; c < 3; c++) {
+    for (let r = 0; r < game.board.length; r++) {
+      let $row = $('<div>');
+      for (let c = 0; c < game.board[r].length; c++) {
         let id = 'cell' + r + c;
-        let $button = $('<button id="' + id + '" class="btn-lg cell" onclick=controller.move(' +
-            r + ',' + c + ')></button>');
-        row.push($button);
+        let $button = $('<button id="' + id +
+          '" class="btn btn-lg cell" onclick="controller.move(' +
+    r + ',' + c + ')"></button>');
         $row.append($button);
       }
       this.$board.append($row);
@@ -112,15 +108,15 @@ let controller = {
   },
 
   reset: function() {
-    this.game.reset();
-    $('.cell').text('?').removeClass('X O').prop("disabled", false);
+    game.reset();
+    $('.cell').text('?').removeClass('X O').prop('disabled', false);
     this.showCurrentPlayer();
   }
-}
+};
 
 $(function() {
-  controller.$board = $("#board");
-  controller.$statusMessage = $("#statusMessage");
+  controller.$board = $('#board');
+  controller.$statusMessage = $('#statusMessage');
   controller.buildGameBoard();
   controller.reset();
 });
@@ -129,6 +125,8 @@ $(function() {
 ## tic-tac-toe.js
 
 ```javascript
+// The Tic-Tac-Toe Game (Model)
+
 let game = {
   board: [
     ['?', '?', '?'],
@@ -141,7 +139,7 @@ let game = {
     for (var r = 0; r < this.board.length; r++) {
       let row = this.board[r];
       for (var c = 0; c < row.length; c++) {
-        this.board[r][c] = '?';
+        row[c] = '?';
       }
     }
     this.currentPlayer = 'X';
@@ -150,7 +148,7 @@ let game = {
   },
 
   togglePlayer: function() {
-    this.currentPlayer = (this.currentPlayer === 'X' ? 'O' : 'X');
+    this.currentPlayer = this.currentPlayer === 'X' ? 'O' : 'X';
   },
 
   move: function(r, c) {
@@ -158,14 +156,13 @@ let game = {
   },
 
   checkForMatch: function(cell1, cell2, cell3) {
-    return cell1 === cell2 &&
-           cell1 === cell3 &&
-           cell1 !== '?';
+    return cell1 === cell2 && cell1 === cell3 && cell1 !== '?';
   },
 
   isBoardFull: function() {
-    for (var r=0; r<3; r++) {
-      for (var c=0; c<3; c++) {
+    for (var r = 0; r < this.board.length; r++) {
+      let row = this.board[r];
+      for (var c = 0; c < row.length; c++) {
         if (this.board[r][c] === '?') {
           return false;
         }
@@ -175,18 +172,17 @@ let game = {
   },
 
   checkForEndOfGame: function() {
-    console.log('checkForEndOfGame:', JSON.stringify(this.board));
-    var rowMatch  = this.checkForMatch(this.board[0][0], this.board[0][1], this.board[0][2]) ||
-                    this.checkForMatch(this.board[1][0], this.board[1][1], this.board[1][2]) ||
-                    this.checkForMatch(this.board[2][0], this.board[2][1], this.board[2][2]);
-    var colMatch  = this.checkForMatch(this.board[0][0], this.board[1][0], this.board[2][0]) ||
-                    this.checkForMatch(this.board[0][1], this.board[1][1], this.board[2][1]) ||
-                    this.checkForMatch(this.board[0][2], this.board[1][2], this.board[2][2]);
-    var diagMatch = this.checkForMatch(this.board[0][0], this.board[1][1], this.board[2][2]) ||
-                    this.checkForMatch(this.board[0][2], this.board[1][1], this.board[2][0]);
-    this.winner = rowMatch || colMatch || diagMatch;
-    this.cat = !this.winner && this.isBoardFull();
-    return this.winner || this.cat;
-  },
-}
+    let rowMatch = this.checkForMatch(this.board[0][0], this.board[0][1], this.board[0][2])
+                || this.checkForMatch(this.board[1][0], this.board[1][1], this.board[1][2])
+                || this.checkForMatch(this.board[2][0], this.board[2][1], this.board[2][2]);
+    let colMatch = this.checkForMatch(this.board[0][0], this.board[1][0], this.board[2][0])
+                || this.checkForMatch(this.board[0][1], this.board[1][1], this.board[2][1])
+                || this.checkForMatch(this.board[0][2], this.board[1][2], this.board[2][2]);
+     let diagMatch = this.checkForMatch(this.board[0][0], this.board[1][1], this.board[2][2])
+                  || this.checkForMatch(this.board[2][0], this.board[1][1], this.board[0][2]);
+     this.winner = rowMatch || colMatch || diagMatch;
+     this.cat = !this.winner && this.isBoardFull();
+     return this.winner || this.cat;
+  }
+};
 ```
