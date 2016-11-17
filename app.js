@@ -43,9 +43,14 @@ let controller = {
       let $row = $('<div>');
       for (let c = 0; c < game.board[r].length; c++) {
         let id = 'cell' + r + c;
-        let $button = $('<button id="' + id +
-          '" class="btn btn-lg cell" onclick="controller.move(' +
-    r + ',' + c + ')"></button>');
+    //     let $button = $('<button id="' + id +
+    //       '" class="btn btn-lg cell" onclick="controller.move(' +
+    // r + ',' + c + ')">?</button>');
+        let $button = $('<button>')
+          .addClass('btn btn-lg cell')
+          .click( () => controller.move(r, c) ) // need a closure here to bind to r and c.
+          .attr('id', id)
+          .text('?');
         $row.append($button);
       }
       this.$board.append($row);
